@@ -4,19 +4,23 @@ API endpoint untuk prediksi saldo mingguan menggunakan model Machine Learning (R
 
 ## 🚀 Deployment
 
-API ini di-deploy menggunakan Vercel Python Serverless Functions.
+API ini di-deploy menggunakan **Railway** (atau platform serupa seperti Render, Heroku).
 
-### Endpoint
+### Endpoints
 
-- **URL**: `https://[your-vercel-domain]/api/predict`
-- **Method**: `POST` (untuk prediksi) / `GET` (untuk info API)
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/` | Info API |
+| GET | `/health` | Health check |
+| GET | `/api/predict` | Info endpoint prediksi |
+| POST | `/api/predict` | Melakukan prediksi |
 
 ## 📋 Cara Penggunaan
 
 ### GET Request - Info API
 
 ```bash
-curl https://[your-vercel-domain]/api/predict
+curl https://[your-railway-domain]/api/predict
 ```
 
 **Response:**
@@ -39,7 +43,7 @@ curl https://[your-vercel-domain]/api/predict
 ### POST Request - Prediksi
 
 ```bash
-curl -X POST https://[your-vercel-domain]/api/predict \
+curl -X POST https://[your-railway-domain]/api/predict \
   -H "Content-Type: application/json" \
   -d '{
     "features": {
@@ -66,14 +70,6 @@ curl -X POST https://[your-vercel-domain]/api/predict \
 }
 ```
 
-**Response Error:**
-```json
-{
-  "success": false,
-  "error": "Missing required features: ['week_number']"
-}
-```
-
 ## 📊 Input Features
 
 | Feature | Type | Deskripsi |
@@ -87,41 +83,41 @@ curl -X POST https://[your-vercel-domain]/api/predict \
 
 ```
 AI-Predict/
+├── app.py                      # Flask application
 ├── api/
-│   └── predict.py              # Endpoint /api/predict
+│   └── predict.py              # Vercel endpoint (backup)
 ├── model_prediksi_saldo_mingguan.pkl  # Model ML
 ├── requirements.txt            # Dependencies
-├── vercel.json                # Konfigurasi Vercel
+├── Procfile                    # Railway/Heroku config
+├── pyproject.toml             # Python project config
+├── vercel.json                # Vercel config (backup)
 ├── .gitignore                 # Ignore files
 └── README.md                  # Dokumentasi
 ```
 
-## 🛠️ Development
+## 🛠️ Deploy ke Railway
 
-### Prerequisites
-- Python 3.9+
-- pip
+1. Buka [railway.app](https://railway.app)
+2. Login dengan GitHub
+3. Klik "New Project" → "Deploy from GitHub repo"
+4. Pilih repository `AI-Predict`
+5. Railway akan auto-detect dan deploy
+6. Klik "Generate Domain" untuk mendapatkan URL public
 
-### Install Dependencies
+## 🧪 Local Development
+
 ```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### Test Model
-```python
-import pickle
-import numpy as np
+# Run server
+python app.py
 
-# Load model
-with open('model_prediksi_saldo_mingguan.pkl', 'rb') as f:
-    model = pickle.load(f)
-
-# Predict
-X = np.array([[5, 150.5, 25, 10]])  # [week, waste_kg, transactions, nasabah]
-prediction = model.predict(X)
-print(f"Prediksi: Rp {prediction[0]:,.2f}")
+# Test endpoint
+curl http://localhost:5000/api/predict
 ```
 
 ## 📝 License
 
 MIT License - Bank Sampah OSKU
+
