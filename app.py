@@ -42,7 +42,8 @@ def health():
         "model_loaded": model is not None
     })
 
-@app.route('/api/predict', methods=['GET'])
+@app.route('/api/predict', methods=['GET', 'OPTIONS'])
+@app.route('/predict', methods=['GET', 'OPTIONS'])
 def predict_info():
     """GET - return API info"""
     return jsonify({
@@ -72,6 +73,8 @@ def predict_info():
     })
 
 @app.route('/api/predict', methods=['POST'])
+@app.route('/predict', methods=['POST'])
+@app.route('/', methods=['POST'])
 def predict():
     """POST - make prediction"""
     try:
@@ -83,8 +86,8 @@ def predict():
                 "error": "No JSON data provided"
             }), 400
         
-        # Extract features
-        features = data.get('features', {})
+        # Extract features - support both nested and flat format
+        features = data.get('features', data)
         
         # Validate required features
         required_features = ['lag_1', 'lag_2', 'lag_3', 'ma_4', 'bulan', 'minggu_dalam_bulan']
@@ -93,7 +96,9 @@ def predict():
         if missing_features:
             return jsonify({
                 "success": False,
-                "error": f"Missing required features: {missing_features}"
+                "error": f"Missing required features: {missing_features}",
+                "expected_features": required_features,
+                "received": list(features.keys()) if isinstance(features, dict) else []
             }), 400
         
         # Prepare features array for prediction
