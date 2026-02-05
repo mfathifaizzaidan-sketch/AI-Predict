@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pickle
 import numpy as np
 import os
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Load model at startup
 model_path = os.path.join(os.path.dirname(__file__), 'model_prediksi_saldo_mingguan.pkl')
@@ -50,17 +52,21 @@ def predict_info():
         "endpoint": "/api/predict",
         "method": "POST",
         "expected_features": [
-            "week_number",
-            "total_waste_kg", 
-            "num_transactions",
-            "num_active_nasabah"
+            "lag_1",
+            "lag_2",
+            "lag_3",
+            "ma_4",
+            "bulan",
+            "minggu_dalam_bulan"
         ],
         "example_request": {
             "features": {
-                "week_number": 5,
-                "total_waste_kg": 150.5,
-                "num_transactions": 25,
-                "num_active_nasabah": 10
+                "lag_1": 1000000,
+                "lag_2": 950000,
+                "lag_3": 900000,
+                "ma_4": 950000,
+                "bulan": 12,
+                "minggu_dalam_bulan": 4
             }
         }
     })
@@ -81,7 +87,7 @@ def predict():
         features = data.get('features', {})
         
         # Validate required features
-        required_features = ['week_number', 'total_waste_kg', 'num_transactions', 'num_active_nasabah']
+        required_features = ['lag_1', 'lag_2', 'lag_3', 'ma_4', 'bulan', 'minggu_dalam_bulan']
         missing_features = [f for f in required_features if f not in features]
         
         if missing_features:
@@ -91,11 +97,14 @@ def predict():
             }), 400
         
         # Prepare features array for prediction
+        # Order: lag_1, lag_2, lag_3, ma_4, bulan, minggu_dalam_bulan
         feature_values = [
-            float(features['week_number']),
-            float(features['total_waste_kg']),
-            float(features['num_transactions']),
-            float(features['num_active_nasabah'])
+            float(features['lag_1']),
+            float(features['lag_2']),
+            float(features['lag_3']),
+            float(features['ma_4']),
+            float(features['bulan']),
+            float(features['minggu_dalam_bulan'])
         ]
         
         # Make prediction
